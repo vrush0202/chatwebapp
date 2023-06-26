@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPT Audio Web App</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .response {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>GPT Audio Web App</h1>
+  <div class="button-container">
+    <button id="generate-audio-btn">Generate Audio</button>
+    <button id="toggle-listen-btn">Start Listening</button>
+  </div>
+  <p class="response"></p>
+
+  <script>
+    const generateAudioBtn = document.getElementById("generate-audio-btn");
+    const toggleListenBtn = document.getElementById("toggle-listen-btn");
+    const responseElement = document.querySelector(".response");
+    let listening = false;
+
+    generateAudioBtn.addEventListener("click", handleGenerateAudio);
+    toggleListenBtn.addEventListener("click", toggleListen);
+
+    function handleGenerateAudio() {
+      const response = responseElement.textContent.trim();
+      if (response !== "") {
+        const synthesis = window.speechSynthesis;
+        if ("speechSynthesis" in window) {
+          const voice = synthesis.getVoices().find(voice => voice.lang === "en");
+          const utterance = new SpeechSynthesisUtterance(response);
+          utterance.voice = voice;
+          utterance.pitch = 1.0;
+          utterance.rate = 1.0;
+          utterance.volume = 1;
+
+          synthesis.speak(utterance);
+        } else {
+          console.log("Text-to-speech not supported.");
+        }
+      }
+    }
+
+    function toggleListen() {
+      if (!listening) {
+        startListening();
+        toggleListenBtn.textContent = "Stop Listening";
+      } else {
+        stopListening();
+        toggleListenBtn.textContent = "Start Listening";
+      }
+      listening = !listening;
+    }
+
+    function startListening() {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.onresult = event => {
+        const speechToText = event.results[0][0].transcript;
+        responseElement.textContent = speechToText;
+      };
+      recognition.start();
+    }
+
+    function stopListening() {
+      window.webkitSpeechRecognition.stop();
+    }
+  </script>
+</body>
+
+</html>
